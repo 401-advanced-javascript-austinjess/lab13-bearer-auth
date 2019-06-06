@@ -20,7 +20,8 @@ const _authBearer = (module.exports = (req, res, next) => {
   // Handle the Bearer Header to pull and verify with the token
 
   async function _authBearer(token) {
-    let user = User.authenticateToken(token);
+    console.log(`BEARER TOKEN: ${token}`);
+    let user = await User.authenticateToken(token);
     await _authenticate(user);
   }
 
@@ -37,16 +38,19 @@ const _authBearer = (module.exports = (req, res, next) => {
   }
 
   function _authenticate(user) {
-    if (user) {
-      req.user = user;
-      req.token = user.generateToken();
-      next();
-    } else {
-      _authError();
-    }
+    console.log(user);
+    if (!user) return _authError();
+    req.user = user;
+    req.token = user.generateToken();
+    console.log(`TOKEN: ${req.token}`);
+    next();
   }
 
   function _authError() {
-    next('Invalid User ID/Password');
+    next({
+      status: 401,
+      statusMessage: 'Unauthorized',
+      message: 'Invalid Username/Password',
+    });
   }
 });

@@ -26,7 +26,11 @@ describe('Auth Middleware', () => {
   // admin:password: YWRtaW46cGFzc3dvcmQ=
   // admin:foo: YWRtaW46Zm9v
 
-  let errorObject = 'Invalid User ID/Password';
+  let errorObject = {
+    message: 'Invalid Username/Password',
+    status: 401,
+    statusMessage: 'Unauthorized',
+  };
 
   describe('user authentication', () => {
     let cachedToken;
@@ -61,5 +65,39 @@ describe('Auth Middleware', () => {
         expect(next).toHaveBeenCalledWith();
       });
     }); // it()
+
+    describe('bearer authentication', () => {
+      it('returns 401 for invalid Bearer token', async () => {
+        let req = {
+          headers: {
+            authorization: 'Bearer oops',
+          },
+        };
+        let res = {};
+        let next = jest.fn();
+        let middleware = auth;
+
+        await middleware(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(errorObject);
+        expect(req.user).not.toBeDefined();
+      });
+
+      it('returns 200 with token for valid Bearer token', async () => {
+        let req = {
+          headers: {
+            authorization: `Bearer ${cachedToken}`,
+          },
+        };
+        let res = {};
+        let next = jest.fn();
+        let middleware = auth;
+
+        await middleware(req, res, next);
+
+        expect(next).toHaveBeenCalledWith();
+        expect(req.user).toBeDefined();
+      });
+    });
   });
 });

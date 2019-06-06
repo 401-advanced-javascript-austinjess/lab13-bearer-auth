@@ -1,6 +1,10 @@
 'use strict';
 
-module.exports = (req,res,next) => {
+module.exports = (req, res, next) => {
   let error = { error: 'Resource Not Found' };
-  res.status(404).json(error);
+  res.statusCode = 404;
+  res.statusMessage = 'Not Found';
+  res.setHeader('Content-Type', 'application/json');
+  res.write(JSON.stringify(error));
+  res.end();
 };
