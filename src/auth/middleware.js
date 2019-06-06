@@ -1,19 +1,27 @@
 'use strict';
 
 const User = require('./users-model.js');
-
-module.exports = (req, res, next) => {
+const _authBearer = (module.exports = (req, res, next) => {
   try {
     let [authType, authString] = req.headers.authorization.split(/\s+/);
 
     switch (authType.toLowerCase()) {
     case 'basic':
       return _authBasic(authString);
+    case 'bearer':
+      return _authBearer(authString);
     default:
       return _authError();
     }
   } catch (e) {
     next(e);
+  }
+
+  // Handle the Bearer Header to pull and verify with the token
+
+  async function _authBearer(token) {
+    let user = User.authenticateToken(token);
+    await _authenticate(user);
   }
 
   function _authBasic(str) {
@@ -41,4 +49,4 @@ module.exports = (req, res, next) => {
   function _authError() {
     next('Invalid User ID/Password');
   }
-};
+});
